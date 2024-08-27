@@ -4,7 +4,7 @@
             style="height: 500px; width: 100%"
             :zoom="zoom"
             :center="center"
-            @click="addMarker"
+            @click="handleMapClick"
         >
             <l-tile-layer :url="url" :attribution="attribution" />
             <l-marker
@@ -41,18 +41,46 @@ export default {
         };
     },
     methods: {
-        addMarker(e) {
-            const name = prompt("Enter a name for this destination:");
-            if (name) {
+        async handleMapClick(e) {
+            const latlng = e.latlng;
+            try {
+                const locationName = await this.getLocationName(
+                    latlng.lat,
+                    latlng.lng
+                );
                 const newMarker = {
-                    name,
-                    latlng: e.latlng,
+                    name: locationName,
+                    latlng,
                 };
                 this.markers.push(newMarker);
                 this.saveDestination(newMarker);
+            } catch (error) {
+                console.error("Error getting location name:", error);
+            }
+        },
+        async getLocationName(lat, lng) {
+            const apiKey = "8198b9a1a7fa493aac8a52ceacee50c6"; // Replace with your API key if needed
+            const url = `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lng}&key=${apiKey}`;
+
+            const response = await axios.get(url);
+            const result = response.data.results[0];
+
+            if (result) {
+                const components = result.components;
+                const city =
+                    components.city ||
+                    components.town ||
+                    components.village ||
+                    components.hamlet ||
+                    "Unknown city";
+                const country = components.country || "Unknown country";
+                return `${city}, ${country}`;
+            } else {
+                return "Unknown location";
             }
         },
         async saveDestination(marker) {
+            console.log(marker.name);
             try {
                 const response = await axios.post("/api/destinations", {
                     name: marker.name,

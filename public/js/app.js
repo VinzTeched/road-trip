@@ -20462,46 +20462,99 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     };
   },
   methods: {
-    addMarker: function addMarker(e) {
-      var name = prompt("Enter a name for this destination:");
-      if (name) {
-        var newMarker = {
-          name: name,
-          latlng: e.latlng
-        };
-        this.markers.push(newMarker);
-        this.saveDestination(newMarker);
-      }
-    },
-    saveDestination: function saveDestination(marker) {
+    handleMapClick: function handleMapClick(e) {
       var _this = this;
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-        var response;
+        var latlng, locationName, newMarker;
         return _regeneratorRuntime().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
             case 0:
-              _context.prev = 0;
-              _context.next = 3;
+              latlng = e.latlng;
+              _context.prev = 1;
+              _context.next = 4;
+              return _this.getLocationName(latlng.lat, latlng.lng);
+            case 4:
+              locationName = _context.sent;
+              newMarker = {
+                name: locationName,
+                latlng: latlng
+              };
+              _this.markers.push(newMarker);
+              _this.saveDestination(newMarker);
+              _context.next = 13;
+              break;
+            case 10:
+              _context.prev = 10;
+              _context.t0 = _context["catch"](1);
+              console.error("Error getting location name:", _context.t0);
+            case 13:
+            case "end":
+              return _context.stop();
+          }
+        }, _callee, null, [[1, 10]]);
+      }))();
+    },
+    getLocationName: function getLocationName(lat, lng) {
+      return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
+        var apiKey, url, response, result, components, city, country;
+        return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+          while (1) switch (_context2.prev = _context2.next) {
+            case 0:
+              apiKey = "8198b9a1a7fa493aac8a52ceacee50c6"; // Replace with your API key if needed
+              url = "https://api.opencagedata.com/geocode/v1/json?q=".concat(lat, "+").concat(lng, "&key=").concat(apiKey);
+              _context2.next = 4;
+              return axios__WEBPACK_IMPORTED_MODULE_2__["default"].get(url);
+            case 4:
+              response = _context2.sent;
+              result = response.data.results[0];
+              console.log(result);
+              if (!result) {
+                _context2.next = 14;
+                break;
+              }
+              components = result.components;
+              city = components.city || components.town || components.village || components.hamlet || "Unknown city";
+              country = components.country || "Unknown country";
+              return _context2.abrupt("return", "".concat(city, ", ").concat(country));
+            case 14:
+              return _context2.abrupt("return", "Unknown location");
+            case 15:
+            case "end":
+              return _context2.stop();
+          }
+        }, _callee2);
+      }))();
+    },
+    saveDestination: function saveDestination(marker) {
+      var _this2 = this;
+      return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
+        var response;
+        return _regeneratorRuntime().wrap(function _callee3$(_context3) {
+          while (1) switch (_context3.prev = _context3.next) {
+            case 0:
+              console.log(marker.name);
+              _context3.prev = 1;
+              _context3.next = 4;
               return axios__WEBPACK_IMPORTED_MODULE_2__["default"].post("/api/destinations", {
                 name: marker.name,
                 latitude: marker.latlng.lat,
                 longitude: marker.latlng.lng,
-                order: _this.markers.length
+                order: _this2.markers.length
               });
-            case 3:
-              response = _context.sent;
+            case 4:
+              response = _context3.sent;
               console.log("Destination saved:", response.data);
-              _context.next = 10;
+              _context3.next = 11;
               break;
-            case 7:
-              _context.prev = 7;
-              _context.t0 = _context["catch"](0);
-              console.error("Error saving destination:", _context.t0);
-            case 10:
+            case 8:
+              _context3.prev = 8;
+              _context3.t0 = _context3["catch"](1);
+              console.error("Error saving destination:", _context3.t0);
+            case 11:
             case "end":
-              return _context.stop();
+              return _context3.stop();
           }
-        }, _callee, null, [[0, 7]]);
+        }, _callee3, null, [[1, 8]]);
       }))();
     }
   }
@@ -20557,7 +20610,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     },
     zoom: $data.zoom,
     center: $data.center,
-    onClick: $options.addMarker
+    onClick: $options.handleMapClick
   }, {
     "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
       return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_l_tile_layer, {
